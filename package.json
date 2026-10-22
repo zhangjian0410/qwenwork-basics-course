@@ -1,6 +1,6 @@
 {
-  "name": "qwen-office-basics-course",
-  "version": "2.0.1",
+  "name": "qwenwork-basics-course",
+  "version": "2.0.2",
   "private": true,
   "description": "千问办公 · 新人培训（基础篇）",
   "engines": {

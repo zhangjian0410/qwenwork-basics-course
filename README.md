@@ -4,6 +4,8 @@
 
 正式入口：https://archer-ai-courses.pages.dev/courses/qwen-office-basics/
 
+源码：https://github.com/zhangjian0410/qwenwork-basics-course
+
 ## 维护与预览
 
 需要 Node.js 22.16+，无需安装课程依赖。

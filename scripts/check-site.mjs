@@ -22,7 +22,7 @@ assert.equal((html.match(/<aside class="explanation"/g)||[]).length,18);
 assert.ok(!html.includes('deck-scale.js'));
 assert.ok(pages.get('practice.html').ids.has('start'));assert.ok(pages.get('practice.html').ids.has('prepare'));assert.ok(pages.get('practice.html').ids.has('done'));
 assert.ok(pages.get('deep.html').html.includes(`data-page-id="${course.id}:deep"`));
-assert.ok(course.format.startsWith('18 页'));assert.equal(course.repository,'zhangjian0410/'+course.id+'-course');
+assert.ok(course.format.startsWith('18 页'));assert.equal(course.repository,'zhangjian0410/'+JSON.parse(await fs.readFile(root+'/package.json','utf8')).name);
 for(const kind of ['pdf','pptx'])assert.ok((await fs.stat(dist+'/downloads/'+course.id+'.'+kind)).size>1000);
 console.log(`PASS ${course.id}:18slides,18notes,${pages.size}pages,${links}local links and previews`);
 
