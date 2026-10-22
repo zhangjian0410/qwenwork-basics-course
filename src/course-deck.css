@@ -1,0 +1,509 @@
+/* HTML-only illustrated deck — 蓝白主题（对齐原课程 webp 风格）
+   色值取自门户 ui-tokens.css:
+   --ui-color-ink:#082f75 --ui-color-action:#1669db --ui-color-accent:#479df2
+   --ui-color-soft:#eef7ff --ui-color-page:#f3f8ff --ui-color-line:#bcddfb
+
+   ============================================================
+   v8 排版统一规范（本文件的唯一字号/间距标准来源）
+   ────────────────────────────────────────────────────────────
+   画布：1280 × 800（内容区 720px，等于标准 16:9 一屏高度）
+        padding: 28px 46px 52px（上 28 / 左右 46 / 下 52，底部 52 = 页脚区）
+   页眉：eyebrow 固定高 17px → h1 恒定落在 y=55px（全册一致）
+   页脚：画布绝对定位 bottom:24px → 全册 y 一致
+   字号阶梯：
+     eyebrow  12px / lh1.40
+     h1       38px / lh1.22 / weight 800
+     lead     17px / lh1.62
+     区块标题 19px（card h2 / panel h2 / business-question h2 / diagram-label /
+                 formula h2 / case-label / sample-* h2）
+     副标题   14.5px（card-sub）
+     正文     14px / lh1.55
+     表格     14px
+     结论条   15.5px
+     页脚     11.5px
+   ============================================================ */
+
+/* ============================================================
+   一、标准 PPT 画布（16:9 外框 + 统一 1280×800 内画布）
+   内部固定 1280px 宽画布，deck-scale.js 用【全局唯一】缩放比缩放，
+   保证：① 每页尺寸完全一致 ② 全册字号视觉一致
+        ③ 页眉页尾在每一页的同一坐标 ④ 内容再长也不裁切
+   ============================================================ */
+@media(min-width:851px){
+  .js .slide{
+    aspect-ratio:16/9!important;min-height:0!important;overflow:hidden!important;
+    padding:0!important;margin:0 auto;width:100%;max-width:1280px;
+  }
+  /* 原 style.css 会把 .slide 直接子元素压成 1px（专为 webp 预览设计）→ 必须反覆盖 */
+  .js .slide>:not(.fullscreen-preview):not(.slide-canvas){
+    position:static!important;width:auto!important;height:auto!important;
+    padding:initial!important;margin:revert!important;overflow:visible!important;
+    clip-path:none!important;-webkit-clip-path:none!important;white-space:normal!important;
+  }
+  /* 画布本体：绝对定位，由 deck-scale.js 计算统一缩放比
+     高度 = --slide-h（全册统一，由 JS 测量后写入，所有页画布等高）
+     → 缩放后每页的页眉 y、页脚 y、视觉字号完全一致 */
+  .js .slide>.slide-canvas{
+    position:absolute!important;left:0!important;top:0!important;
+    width:1280px!important;height:var(--slide-h,auto)!important;min-height:720px!important;
+    margin:0!important;padding:28px 46px 56px!important;box-sizing:border-box!important;
+    display:flex;flex-direction:column;overflow:visible!important;clip-path:none!important;
+    /* 原 style.css 给 .slide 直接子元素设了 white-space:nowrap，必须在这里显式还原，
+       否则整页文字不换行 → 横向撑爆 → 缩放比被压到 0.5 左右（页面看着空） */
+    white-space:normal!important;
+    transform-origin:0 0;transform:translate(var(--slide-x,0px),var(--slide-y,0px)) scale(var(--slide-k,1));
+  }
+  /* 全屏时同样不能被压扁（特异度需高于 html:fullscreen 规则） */
+  html.js:fullscreen .slide>.slide-canvas{
+    position:absolute!important;left:0!important;top:0!important;
+    width:1280px!important;height:var(--slide-h,auto)!important;min-height:720px!important;
+    margin:0!important;padding:28px 46px 56px!important;box-sizing:border-box!important;
+    display:flex;flex-direction:column;overflow:visible!important;clip-path:none!important;
+    white-space:normal!important;
+    transform-origin:0 0;transform:translate(var(--slide-x,0px),var(--slide-y,0px)) scale(var(--slide-k,1));
+  }
+
+  /* ---------- 统一字号阶梯（全册唯一标准） ---------- */
+  .slide-canvas{font-family:"PingFang SC","Microsoft YaHei","Heiti TC",Arial,sans-serif}
+
+  /* 页眉：固定高度 → h1 在每一页都落在同一 y 坐标 */
+  .slide-canvas .eyebrow{font-size:12px;line-height:1.4;height:17px;margin:0 0 10px!important;letter-spacing:.05em}
+  .slide-canvas h1{font-size:38px;line-height:1.22;font-weight:800;margin:0 0 10px;letter-spacing:-.4px;color:var(--ui-color-ink)}
+  .slide-canvas .lead{font-size:17px;line-height:1.62;margin:0 0 14px;max-width:100%;color:var(--ui-color-muted)}
+  .slide-canvas h2{font-size:19px;line-height:1.35}
+
+  /* 区块标题统一 19px */
+  .slide-canvas .card h2,
+  .slide-canvas .panel>h2,
+  .slide-canvas .business-question h2,
+  .slide-canvas .diagram-label,
+  .slide-canvas .formula h2,
+  .slide-canvas .case-label,
+  .slide-canvas .sample-input h2,
+  .slide-canvas .sample-delivery h2,
+  .slide-canvas .ending-next h2{font-size:19px;line-height:1.35;font-weight:700}
+
+  /* 副标题统一 14px（与正文同号，靠颜色/字重区分层级） */
+  .slide-canvas .card-sub,
+  .slide-canvas .business-question .card-sub{font-size:14px;line-height:1.55;font-weight:700;color:var(--ui-color-action);margin:0 0 6px}
+
+  /* 正文统一 14px / lh1.55 */
+  .slide-canvas .card>p:last-child,
+  .slide-canvas .panel p,
+  .slide-canvas .business-question p,
+  .slide-canvas .panel-item p,
+  .slide-canvas .sample-note,
+  .slide-canvas .sample-output p,
+  .slide-canvas .sample-task p,
+  .slide-canvas .optional{font-size:14px;line-height:1.5;color:var(--ui-color-muted)}
+  .slide-canvas .sample-task p{color:var(--ui-color-ink)}
+  .slide-canvas .sample-output p:first-child{font-size:15px;font-weight:700;color:var(--ui-color-action)}
+  .slide-canvas .panel h3{font-size:15px;line-height:1.45;margin:0 0 4px;color:var(--ui-color-ink)}
+  .slide-canvas .panel-item{margin-bottom:9px}
+  .slide-canvas .panel-item:last-child{margin-bottom:0}
+
+  .slide-canvas .panel>h2{padding:9px 16px}
+  .slide-canvas .panel-body{padding:12px 16px}
+  .slide-canvas .diagram-label{padding:8px 14px;margin:0 0 12px;background:linear-gradient(100deg,#0c479c,#57a8f6);color:#fff}
+  .slide-canvas .takeaway{font-size:15.5px;padding:11px 16px;margin:10px 0 0;line-height:1.55}
+  .slide-canvas table{font-size:14px}
+  .slide-canvas th,.slide-canvas td{padding:8px 11px;line-height:1.5}
+  .slide-canvas .formula{padding:13px 18px;margin-bottom:12px}
+  .slide-canvas .formula>p{font-size:17px;font-weight:800}
+
+  /* 结论条 / 提示 / 要点条 */
+  .slide-canvas .slide-points{margin:10px 0 0;padding:9px 14px;gap:8px}
+  .slide-canvas .sp-label{font-size:12px}
+  .slide-canvas .sp-chip{font-size:13px;padding:4px 11px}
+  .slide-canvas .slide-tip{margin:9px 0 0;padding:9px 13px}
+  .slide-canvas .slide-tip b{font-size:13px;line-height:1.6}
+  .slide-canvas .slide-tip span{font-size:14px;line-height:1.6}
+
+  /* 页脚：贴画布底部（画布全册等高 → 页脚 y 全册一致） */
+  .slide-canvas .slide-byline{
+    margin-top:auto!important;padding-top:8px!important;border-top:1px dashed var(--ui-color-line);
+    font-size:11.5px;line-height:1.4;color:var(--ui-color-muted);text-align:left;flex:0 0 auto
+  }
+  .slide-canvas .slide-byline span{font-weight:700;color:var(--ui-color-action)}
+
+  /* 主体区撑满剩余高度（避免底部出现大片空白） */
+  .slide-canvas>.slide-cols{flex:1 1 auto!important;min-height:0!important}
+  .slide-canvas>.cover-body,
+  .slide-canvas>.ending-body{flex:1 1 auto!important;min-height:0!important;display:flex;flex-direction:column}
+}
+@media(max-width:850px){
+  .js .slide{aspect-ratio:auto!important;overflow:visible!important;padding:26px 19px 32px!important}
+  .js .slide>.slide-canvas{
+    position:static!important;width:auto!important;min-height:0!important;height:auto!important;
+    padding:0!important;transform:none!important;display:block;
+  }
+  .slide-canvas .slide-byline{position:static!important;left:auto!important;right:auto!important;bottom:auto!important;margin-top:16px!important}
+}
+
+/* ===== 幻灯片外框 ===== */
+/* ===== 与老课一致的页面底纹（浅蓝网格 + 底部蓝色波浪）=====
+   老课用 assets/theme.webp 铺底；新课是纯 HTML 实现，用等价 CSS 复刻同一套视觉语言。
+   装饰挂在 .slide-canvas 内部 → 随画布等比缩放，位置与老课完全对齐。 */
+.slide-canvas{background:#fff}
+.slide-canvas::before{content:"";position:absolute;inset:0;pointer-events:none;z-index:0;background:linear-gradient(180deg,rgba(238,247,255,.92) 0%,rgba(255,255,255,0) 46%),linear-gradient(90deg,rgba(188,221,251,.20) 1px,transparent 1px) 0 0/36px 36px,linear-gradient(180deg,rgba(188,221,251,.20) 1px,transparent 1px) 0 0/36px 36px}
+.slide-canvas::after{content:"";position:absolute;left:0;right:0;bottom:0;height:22px;pointer-events:none;z-index:0;border-radius:0 0 12px 12px;background:radial-gradient(110% 150% at 8% 130%,rgba(8,47,117,.30) 0 40%,transparent 41%),radial-gradient(140% 165% at 44% 136%,rgba(22,105,219,.24) 0 44%,transparent 45%),radial-gradient(120% 155% at 86% 132%,rgba(71,157,242,.30) 0 46%,transparent 47%)}
+.slide-canvas>*:not(.slide-icon){position:relative;z-index:1}
+.slide-canvas>.slide-icon{z-index:1}
+/* 不用 border 而用 inset box-shadow 画边框：border 会占掉 2px，
+   导致 1280px 画布缩到 1278 才能铺满 → 页面出现细白边 */
+.slide{background:#fff;border:0;border-radius:12px;box-shadow:0 8px 30px rgba(8,47,117,.07),inset 0 0 0 1px var(--ui-color-line);position:relative;min-height:0}
+/* 与老课一致的页面底纹：浅蓝网格 + 底部波浪装饰（老课 theme.webp 的等价纯 CSS 实现） */
+.slide{background:#fff}
+
+.slide::before{content:"";position:absolute;left:0;right:0;top:0;height:6px;background:linear-gradient(90deg,var(--ui-color-ink),var(--ui-color-action) 55%,var(--ui-color-accent));border-radius:12px 12px 0 0;z-index:2}
+/* 页眉：块级流式排版，避免 flex 把标题/副标题挤成并排重叠 */
+.slide-header{display:block;padding-right:0;position:relative}
+.slide-head-main{min-width:0}
+.slide-header .eyebrow{display:flex;align-items:center;gap:16px;color:var(--ui-color-action);font-weight:600;letter-spacing:.05em;margin:0 0 10px;padding-right:78px}
+.slide-header .eyebrow span{color:var(--ui-color-action);margin-left:auto;white-space:nowrap}
+.lead{color:var(--ui-color-muted);font-size:17px;max-width:1080px;margin:0 0 14px;line-height:1.62}
+.diagram{min-height:0!important;margin:0 0 14px}
+
+/* 图标徽章：绝对定位到右上角，不参与文档流（避免挤压标题） */
+.slide-icon{position:absolute;top:0;right:0;width:56px;height:56px;border-radius:15px;background:linear-gradient(135deg,#082f75,#1669db);display:flex;align-items:center;justify-content:center;box-shadow:0 8px 20px rgba(8,47,117,.22);z-index:1}
+.slide-icon svg{display:block;transform:scale(.92)}
+
+/* ===== 署名：单行，不换行、不左右分居 ===== */
+.slide-byline{display:block!important;justify-content:flex-start!important;text-align:left;
+  border-top:1px dashed var(--ui-color-line);color:var(--ui-color-muted);font-size:11.5px}
+.slide-byline::before{content:none!important}
+.slide-byline span{font-weight:700;color:var(--ui-color-action)}
+
+/* ===== 封面 / 结语：浅色主题，与正文页完全同一套色板与字号 =====
+   特异性高于 .js .slide，但不再使用深蓝底 —— 全册统一浅色。 */
+.js .slide.kind-cover,.js .slide.kind-ending{
+  background:linear-gradient(160deg,#f7fbff 0%,#eaf3ff 62%,#dcecff 100%)!important;color:var(--ui-color-ink);border:none}
+.js .slide.kind-cover::before,.js .slide.kind-ending::before{background:linear-gradient(90deg,#082f75,#1669db 55%,#479df2)}
+.js .slide.kind-cover .eyebrow,.js .slide.kind-ending .eyebrow{color:var(--ui-color-action)}
+.js .slide.kind-cover .eyebrow span,.js .slide.kind-ending .eyebrow span{color:var(--ui-color-action)}
+.kind-cover h1,.kind-ending h1{color:var(--ui-color-ink)}
+.kind-cover .lead,.kind-ending .lead{color:var(--ui-color-muted)}
+.js .slide.kind-cover .slide-byline,.js .slide.kind-ending .slide-byline{border-top-color:var(--ui-color-line);color:var(--ui-color-muted)}
+.js .slide.kind-cover .slide-byline span,.js .slide.kind-ending .slide-byline span{color:var(--ui-color-action)}
+/* 封面/结语：右下角浅色装饰圆，与正文页同色系 */
+.kind-cover::after,.kind-ending::after{content:"";position:absolute;right:-90px;bottom:-90px;width:300px;height:300px;border-radius:50%;
+  background:radial-gradient(circle,rgba(71,157,242,.16),transparent 70%);pointer-events:none;z-index:0}
+.kind-cover .slide-header,.kind-cover .cover-body,.kind-cover .slide-byline,
+.kind-ending .slide-header,.kind-ending .ending-body,.kind-ending .slide-byline{position:relative;z-index:1}
+
+/* 封面三块信息 */
+.cover-body{margin-top:2px;min-width:0}
+.cover-overview{font-size:16px;line-height:1.75;max-width:1120px;margin:0 0 16px;color:var(--ui-color-muted)}
+.cover-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;align-items:stretch}
+.cover-grid>*{min-width:0}
+.cover-card{background:#fff;border:1px solid var(--ui-color-line);border-radius:12px;padding:15px 17px;min-width:0}
+.cover-card h2{font-size:17px;color:var(--ui-color-action);margin:0 0 9px;font-weight:700}
+.cover-card p{font-size:14px;line-height:1.7;color:var(--ui-color-ink);margin:0;overflow-wrap:anywhere}
+.cover-card ul{margin:0;padding-left:18px;font-size:14px;line-height:1.75;color:var(--ui-color-ink)}
+.cover-card li{overflow-wrap:anywhere}
+@media(max-width:850px){.cover-grid{grid-template-columns:1fr;gap:14px}}
+
+/* 封面学习路线：4 步横向流程，填满封面下半部 */
+.cover-route{margin-top:16px;padding-top:14px;border-top:1px solid var(--ui-color-line)}
+.cover-route-label{font-size:12.5px;font-weight:700;color:var(--ui-color-action);letter-spacing:.06em;margin:0 0 10px}
+.route-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+.route-step{display:flex;gap:10px;align-items:flex-start;min-width:0;background:#fff;border:1px solid var(--ui-color-line);border-radius:10px;padding:11px 13px}
+.route-no{flex:0 0 auto;width:24px;height:24px;border-radius:50%;background:var(--ui-color-action);color:#fff;font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center}
+.route-step b{display:block;color:var(--ui-color-ink);font-size:14.5px;margin:2px 0 4px}
+.route-step p{margin:0;font-size:13px;line-height:1.6;color:var(--ui-color-muted);overflow-wrap:anywhere}
+@media(max-width:850px){.route-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:520px){.route-grid{grid-template-columns:1fr}}
+
+/* 结语卡片 */
+.ending-body{margin-top:2px;min-width:0}
+.ending-lead{font-size:16px;line-height:1.7;color:var(--ui-color-muted);margin:0 0 14px;max-width:1120px}
+.ending-lead p{margin:0 0 6px}
+.ending-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px;margin-bottom:12px;align-items:stretch}
+.ending-grid>*{min-width:0}
+.ending-card{background:#fff;border:1px solid var(--ui-color-line);border-radius:12px;padding:13px 15px;min-width:0}
+.ending-card .step-number{color:var(--ui-color-action);font-size:13px}
+.ending-card h2{font-size:17px;color:var(--ui-color-ink);margin:6px 0 8px;font-weight:700}
+.ending-card p{font-size:14px;line-height:1.7;color:var(--ui-color-muted);margin:0;overflow-wrap:anywhere}
+.ending-next h2{font-size:17px;color:var(--ui-color-ink);margin:0 0 9px}
+.ending-links{display:flex;flex-wrap:wrap;gap:10px}
+.ending-link{display:inline-block;background:var(--ui-color-soft);border:1px solid var(--ui-color-line);color:var(--ui-color-action);text-decoration:none;padding:8px 14px;border-radius:8px;font-size:14px;font-weight:600}
+.ending-link:hover{background:#e2efff}
+
+/* 结语验收三问 */
+.ending-checks{margin:0 0 12px;padding:10px 13px;background:#fff;border:1px solid var(--ui-color-line);border-radius:12px}
+.ending-checks-label{font-size:13px;font-weight:700;color:var(--ui-color-action);letter-spacing:.05em;margin:0 0 7px}
+.ending-checks ul{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.ending-checks li{display:flex;gap:10px;align-items:flex-start;min-width:0}
+.ck-no{flex:0 0 auto;width:24px;height:24px;border-radius:50%;background:var(--ui-color-soft);border:1px solid var(--ui-color-line);color:var(--ui-color-action);font-size:11.5px;font-weight:800;display:flex;align-items:center;justify-content:center;margin-top:2px}
+.ending-checks b{display:block;color:var(--ui-color-ink);font-size:14px;margin:0 0 4px;line-height:1.5}
+.ending-checks p{margin:0;font-size:12.5px;line-height:1.6;color:var(--ui-color-muted);overflow-wrap:anywhere}
+@media(max-width:850px){.ending-grid{grid-template-columns:1fr;gap:14px}.ending-checks ul{grid-template-columns:1fr;gap:12px}}
+
+/* ===== 单页图文：左文右图（两栏等高，框体对齐不重叠） ===== */
+/* 关键：grid 轨道必须写 minmax(0,1fr)。写成 1fr 实际是 minmax(auto,1fr)，
+   卡片内长文字会把轨道撑破 → 整页横向溢出 */
+.slide-cols{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:24px;align-items:stretch;margin-bottom:0;min-height:0}
+.slide-cols>*{min-width:0;min-height:0}
+.slide-cols>.diagram{display:flex;flex-direction:column;min-width:0;min-height:0}
+.slide-cols>.diagram>*{flex:0 0 auto;min-width:0}
+/* 两栏内容撑满整列高度 → 底部不出现大片空白 */
+.slide-cols>.diagram>.two-panels,
+.slide-cols>.diagram>.cards,
+.slide-cols>.diagram>.business-questions,
+.slide-cols>.diagram>.case-layout,
+.slide-cols>.diagram>.formula,
+.slide-cols>.diagram>.table,
+.slide-cols>.diagram>.matrix{flex:1 1 auto!important;min-height:0!important}
+.slide-cols>.diagram>.two-panels>.panel,
+.slide-cols>.diagram>.cards>.card,
+.slide-cols>.diagram>.business-questions>.business-question{min-height:0!important}
+/* 面板必须是 flex 列容器，否则 panel-body 的 flex:1 无参照高度，
+   条目会全部挤在顶部、面板底部留下大片空白 */
+.slide-cols>.diagram>.two-panels>.panel,
+.slide-cols>.diagram>.case-layout .panel{display:flex!important;flex-direction:column;min-height:0}
+/* 面板内部：条目之间间距均匀，不用 space-around（会把首尾也撑开） */
+.slide-cols>.diagram>.two-panels>.panel>.panel-body,
+.slide-cols>.diagram>.case-layout .panel>.panel-body{flex:1 1 auto!important;display:flex;flex-direction:column;justify-content:flex-start}
+.slide-cols>.diagram>.two-panels>.panel>.panel-body>.panel-item{flex:1 1 auto;display:flex;flex-direction:column;justify-content:center}
+.slide-visual{margin:0;background:linear-gradient(160deg,#f3f8ff,#eef7ff);border:1px solid var(--ui-color-line);border-radius:14px;padding:13px 15px;text-align:center;display:flex;flex-direction:column;justify-content:center;align-items:center;min-width:0}
+.slide-visual svg{display:block;margin:0 auto;max-height:240px;max-width:100%}
+.slide-visual figcaption{font-size:12.5px;color:var(--ui-color-muted);margin-top:8px;line-height:1.55}
+
+/* ---------- 右栏结构图（由本页真实数据生成） ---------- */
+.slide-visual.slide-map{align-items:stretch;text-align:left;justify-content:flex-start;padding:15px 16px 16px;gap:0}
+.map-title{font-size:12.5px;font-weight:700;color:var(--ui-color-ink);margin:0 0 10px;padding-bottom:8px;border-bottom:1px dashed var(--ui-color-line);letter-spacing:.02em}
+.map-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.map-item{display:flex;gap:9px;align-items:flex-start;min-width:0}
+.map-no{flex:0 0 auto;width:23px;height:23px;border-radius:7px;background:var(--ui-color-action);color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;letter-spacing:.02em}
+.map-text{min-width:0;display:flex;flex-direction:column;gap:2px;padding-top:1px}
+.map-text b{font-size:13.5px;line-height:1.35;color:var(--ui-color-ink);font-weight:700}
+.map-sub{font-size:12px;line-height:1.5;color:var(--ui-color-muted);overflow-wrap:anywhere}
+.map-list-flow .map-item{position:relative}
+.map-list-flow .map-item+.map-item{margin-top:2px}
+.map-list-flow .map-item+.map-item::before{content:"";position:absolute;left:11px;top:-11px;width:2px;height:11px;background:var(--ui-color-line)}
+.map-groups{display:flex;flex-direction:column;gap:12px}
+.map-group h3{font-size:13px;font-weight:700;color:var(--ui-color-action);margin:0 0 7px;padding-left:9px;border-left:3px solid var(--ui-color-action)}
+.map-list-plain .map-no{background:var(--ui-color-soft);color:var(--ui-color-action);border:1px solid var(--ui-color-line)}
+.map-note{font-size:12px;line-height:1.55;color:var(--ui-color-muted);margin:0}
+.map-chain{display:flex;flex-direction:column;gap:7px}
+.map-chain-item{display:flex;gap:9px;align-items:flex-start;background:rgba(255,255,255,.72);border:1px solid var(--ui-color-line);border-radius:10px;padding:8px 10px;min-width:0}
+.map-grid{display:flex;flex-direction:column;gap:5px}
+.map-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(0,1fr));gap:5px}
+.map-cell{font-size:11.5px;line-height:1.4;padding:5px 7px;border-radius:7px;background:rgba(255,255,255,.72);border:1px solid var(--ui-color-line);color:var(--ui-color-muted);overflow-wrap:anywhere}
+.map-row.is-head .map-cell{background:var(--ui-color-action);border-color:var(--ui-color-action);color:#fff;font-weight:700;font-size:12px}
+.map-row .map-cell.is-key{background:var(--ui-color-soft);color:var(--ui-color-ink);font-weight:700}
+/* 右栏补充说明块（讲解要点，让右栏不再是"半页空白"） */
+.map-note-block{margin-top:12px;padding-top:10px;border-top:1px dashed var(--ui-color-line)}
+.map-note-title{font-size:12.5px;font-weight:700;color:var(--ui-color-action);margin:0 0 5px}
+.map-note-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:5px}
+.map-note-list li{position:relative;padding-left:13px;font-size:12.5px;line-height:1.55;color:var(--ui-color-muted);overflow-wrap:anywhere}
+.map-note-list li::before{content:"";position:absolute;left:0;top:8px;width:5px;height:5px;border-radius:50%;background:var(--ui-color-accent)}
+.map-kw{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px}
+.map-kw span{font-size:12px;line-height:1.5;color:var(--ui-color-ink);background:#fff;border:1px solid var(--ui-color-line);border-radius:999px;padding:2px 9px}
+/* 讲解面板：右栏上下均匀分布，不留大片空白 */
+.slide-visual.slide-explain{justify-content:flex-start;align-items:stretch;text-align:left;padding:12px 14px 13px;gap:0}
+.slide-visual.slide-explain>.map-title{margin-bottom:10px}
+.slide-visual.slide-explain .map-note-block{margin-top:0;padding:0 0 8px;border-top:0}
+.slide-visual.slide-explain .map-note-block+.map-note-block{margin-top:8px;padding-top:8px;border-top:1px dashed var(--ui-color-line)}
+.slide-visual.slide-explain .map-note-block:last-child{padding-bottom:0;margin-bottom:0}
+@media(max-width:850px){.slide-cols{grid-template-columns:1fr;gap:18px}}
+
+/* 本页要点条 + 提示框（合并为一个紧凑信息块） */
+.slide-points{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:10px 0 0;padding:9px 14px;background:var(--ui-color-soft);border:1px solid var(--ui-color-line);border-radius:10px}
+.sp-label{font-size:12px;font-weight:800;color:var(--ui-color-action);letter-spacing:.04em;flex:0 0 auto}
+.sp-chip{font-size:13px;color:var(--ui-color-ink);background:#fff;border:1px solid var(--ui-color-line);border-radius:999px;padding:4px 11px;line-height:1.5;white-space:normal}
+.slide-tip{display:flex;gap:10px;align-items:flex-start;margin:9px 0 0;background:#fff6f6;border-left:4px solid #e26a6a;border-radius:0 10px 10px 0;padding:9px 13px}
+.slide-tip b{color:#c0392b;flex:0 0 auto;font-size:13px;line-height:1.6;white-space:nowrap}
+.slide-tip span{font-size:14px;line-height:1.6;color:var(--ui-color-ink);flex:1 1 auto;min-width:0;overflow-wrap:anywhere}
+.takeaway{margin:10px 0 0!important}
+
+/* ===== 底部合并信息块：要点 + 提示 + 结论 =====
+   原设计把三块竖着排，纵向多占约 90px，导致内容溢出 720 画布。
+   现在合并成一张表格式卡片：每行「标签 + 内容」，纵向更紧凑。 */
+.slide-notes{margin:10px 0 0;border:1px solid var(--ui-color-line);border-radius:10px;background:var(--ui-color-soft);overflow:hidden}
+.note-row{display:flex;gap:12px;align-items:flex-start;padding:7px 14px;min-width:0}
+.note-row+.note-row{border-top:1px solid var(--ui-color-line)}
+.note-label{flex:0 0 auto;width:34px;font-size:12px;font-weight:800;letter-spacing:.04em;color:var(--ui-color-action);line-height:1.7;padding-top:1px}
+.note-text{font-size:13.5px;line-height:1.55;color:var(--ui-color-ink);min-width:0;overflow-wrap:anywhere}
+.note-chips{display:flex;flex-wrap:wrap;gap:7px;min-width:0}
+.note-chips .sp-chip{font-size:12.5px;padding:2px 10px;line-height:1.55}
+.note-tip{background:#fff6f6}
+.note-tip .note-label{color:#c0392b}
+.note-tip .note-text{color:#8a2b20}
+.note-take{background:#f2f9ff}
+.note-take .note-label{color:#0f5bb5}
+
+/* ===== 动手做：单列长文档（居中，避免贴左） ===== */
+.practice-shell{max-width:1080px;margin-left:auto;margin-right:auto;padding-left:24px;padding-right:24px;box-sizing:border-box}
+@media(max-width:850px){.practice-shell{padding-left:16px;padding-right:16px}}
+.practice-flow{display:flex;flex-direction:column;gap:22px;margin-top:8px}
+.practice-task{border:1px solid var(--ui-color-line);border-radius:14px;background:#fff;overflow:hidden;box-shadow:0 6px 22px rgba(8,47,117,.06)}
+.practice-task-head{display:flex;align-items:center;gap:14px;background:linear-gradient(100deg,#0c479c,#57a8f6);color:#fff;padding:16px 22px}
+.task-no{font-size:20px;font-weight:800;background:rgba(255,255,255,.2);border-radius:8px;padding:2px 12px}
+.practice-task-head h2{color:#fff;font-size:22px;margin:0}
+.task-goal{display:flex;gap:14px;align-items:baseline;margin:18px 22px 0;background:var(--ui-color-soft);border-left:4px solid var(--ui-color-action);padding:12px 16px;border-radius:0 8px 8px 0}
+.task-goal b{color:var(--ui-color-action);flex:0 0 auto}
+.task-goal span{color:var(--ui-color-ink);font-size:15px;line-height:1.7}
+.task-steps{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px 22px;padding:18px 22px}
+.task-step h3{font-size:18px;color:var(--ui-color-ink);margin:0 0 6px}
+.task-step p{font-size:15px;line-height:1.75;color:var(--ui-color-muted);margin:0}
+.task-example{margin:0 22px 16px;background:#f4fbf4;border:1px solid #bfe6c4;border-radius:8px;padding:12px 16px}
+.task-example .ex-label{font-weight:700;color:#2e7d32;display:block;margin-bottom:4px}
+.task-example p{font-size:15px;line-height:1.8;color:var(--ui-color-ink);margin:0}
+.task-check{margin:0 22px 16px}
+.task-check b{display:block;color:var(--ui-color-action);font-size:15px;margin-bottom:8px}
+.task-check ul,.task-check-all{list-style:none;padding:0;margin:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.task-check li,.task-check-all li{position:relative;padding:8px 12px 8px 34px;background:#f6fbff;border:1px solid var(--ui-color-line);border-radius:8px;font-size:14px;line-height:1.55}
+.task-check li::before,.task-check-all li::before{content:"☐";position:absolute;left:12px;top:8px;color:var(--ui-color-action);font-weight:700}
+.task-pitfalls{margin:0 22px 18px;background:#fff6f6;border-left:4px solid #e26a6a;padding:12px 16px;border-radius:0 8px 8px 0}
+.task-pitfalls b{color:#c0392b;margin-right:8px}
+.task-pitfalls span{font-size:15px;line-height:1.75;color:var(--ui-color-ink)}
+.practice-final{background:linear-gradient(160deg,#eef7ff,#dcecff);border:1px solid var(--ui-color-line);border-radius:14px;padding:22px 24px}
+.practice-final h2{color:var(--ui-color-ink);font-size:22px;margin:0 0 6px}
+.practice-final p{font-size:15px;color:var(--ui-color-muted);line-height:1.7;margin:0 0 16px}
+.practice-final .course-start{margin-top:6px}
+@media(max-width:850px){.task-steps{grid-template-columns:1fr}.task-check ul,.task-check-all{grid-template-columns:1fr}}
+
+/* ===== 深入阅读 ===== */
+.reading-section{border-bottom:1px solid var(--ui-color-line);padding-bottom:18px}
+.reading-section .explanation-heading h2{color:var(--ui-color-ink)}
+.reading-refs{margin-top:10px;background:var(--ui-color-soft);border:1px solid var(--ui-color-line);border-radius:12px;padding:20px 24px}
+.ref-list{list-style:none;margin:0;padding:0;display:grid;gap:14px}
+.ref-list li{display:flex;flex-direction:column;gap:4px;padding:14px 18px;background:#fff;border:1px solid var(--ui-color-line);border-radius:10px}
+.ref-list li a{font-size:16px;font-weight:700;color:var(--ui-color-action);text-decoration:none;word-break:break-all}
+.ref-list li a:hover{text-decoration:underline}
+.ref-list li span{font-size:14px;color:var(--ui-color-muted);line-height:1.6}
+.reading-inline{list-style:none;padding:0;margin:12px 0 0;display:grid;gap:8px}
+.reading-inline li{padding:8px 12px;background:var(--ui-color-soft);border:1px solid var(--ui-color-line);border-radius:8px}
+.reading-inline li a{font-weight:700;color:var(--ui-color-action);text-decoration:none}
+.reading-inline li span{color:var(--ui-color-muted);font-size:14px;margin-left:8px}
+.self-list{list-style:none;padding:0;margin:0;display:grid;gap:12px}
+.self-list li{position:relative;padding:14px 16px 14px 44px;background:#fff;border:1px solid var(--ui-color-line);border-radius:10px;font-size:16px;line-height:1.7;color:var(--ui-color-ink)}
+.self-list li::before{content:"☐";position:absolute;left:16px;top:13px;color:var(--ui-color-action);font-weight:700;font-size:18px}
+
+/* 海报总览主题化 */
+.poster-heading{background:linear-gradient(135deg,#082f75,#1669db);color:#fff;border-radius:14px;padding:30px 34px;margin-bottom:26px;box-shadow:0 10px 30px rgba(8,47,117,.12)}
+.poster-heading .lesson-label{color:#a9ccff;font-weight:600}
+.poster-heading h1{color:#fff;margin:8px 0 10px}
+.poster-heading>p{color:#d7e7ff}
+.poster-byline{margin-top:16px;font-size:13px;color:#bcdcff;font-weight:600}
+
+/* 卡片/面板视觉微调（沿用原风格，保证图文清晰） */
+.card h2{color:var(--ui-color-ink)}
+.business-question h2{color:var(--ui-color-ink)}
+
+/* ===== 卡片组自适应网格 =====
+   .cards 原本是 flex 横排：卡片一多（4~6 张）每张被压到 100 多 px 宽，
+   正文被挤成竖条，整页高度暴涨、缩放比被压到 0.4 左右。
+   这里改为自适应网格：按卡片数量选列数，保证每张卡宽度都够读。 */
+.slide-canvas .cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.slide-canvas .cards>*{min-width:0}
+/* 2~3 张：横排一行 */
+.slide-canvas .cards-n2,.slide-canvas .cards-n3{grid-template-columns:repeat(auto-fit,minmax(0,1fr))}
+/* 4 张：2×2 */
+.slide-canvas .cards-n4{grid-template-columns:repeat(2,minmax(0,1fr))}
+/* 5~6 张：3 列 */
+.slide-canvas .cards-n5,.slide-canvas .cards-n6{grid-template-columns:repeat(3,minmax(0,1fr))}
+/* 流程箭头在网格里没有意义，隐藏 */
+.slide-canvas .cards .flow-arrow{display:none}
+/* 卡片内边距统一收紧（6 张卡 × 2 行时，每张省 ~10px → 整页省 ~40px） */
+.slide-canvas .card{padding:13px 15px}
+.slide-canvas .card h2{margin:3px 0 5px}
+.slide-canvas .card .step-number{font-size:12.5px;line-height:1.2}
+/* 步骤类：4 步 2×2，5 步 3 列（上 3 下 2） */
+.slide-canvas .cards.five-steps{grid-template-columns:repeat(3,minmax(0,1fr))}
+.slide-canvas .cards.four-steps{grid-template-columns:repeat(2,minmax(0,1fr))}
+.slide-canvas .cards.five-steps .card,
+.slide-canvas .cards.four-steps .card{padding:12px 14px}
+.slide-canvas .cards.five-steps .card h2,
+.slide-canvas .cards.four-steps .card h2{font-size:19px;margin:3px 0 5px}
+
+/* ===== 业务问答（6 个 Q&A）：2 列太高 → 3 列 ===== */
+.slide-canvas .business-questions{grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:13px!important}
+.slide-canvas .business-questions.biz-n4{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+.slide-canvas .business-questions.biz-n5,
+.slide-canvas .business-questions.biz-n6{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+.slide-canvas .business-questions>.business-question{padding:13px 15px}
+.slide-canvas .business-question h2{font-size:19px;margin:5px 0 6px}
+.slide-canvas .business-question p{font-size:14px;line-height:1.55}
+
+/* ===== 表格页：给表格更多宽度，行高更紧凑 ===== */
+/* .kind-table 是 .slide 上的 class（画布的祖先），不是画布内的 */
+html.js .slide.kind-table .slide-cols{grid-template-columns:minmax(0,2.1fr) minmax(0,1fr)!important;gap:20px!important}
+.slide-canvas .matrix{font-size:14px!important;table-layout:fixed}
+.slide-canvas .matrix th,.slide-canvas .matrix td{padding:7px 10px!important;line-height:1.45!important;overflow-wrap:anywhere}
+.slide-canvas .matrix th:first-child{width:17%!important}
+.slide-canvas .matrix td{width:27%!important}
+.slide-canvas table,.slide-canvas .compare{font-size:14px!important}
+.slide-canvas .compare th,.slide-canvas .compare td{font-size:14px!important}
+.slide-canvas th,.slide-canvas td{padding:8px 11px;line-height:1.5}
+
+/* ===== grid 轨道防撑破 =====
+   原 style.css 里 .two-panels / .case-layout 写的是 1fr（= minmax(auto,1fr)），
+   面板内文字一长就把轨道撑破 → 整页横向溢出。这里统一改为 minmax(0,1fr)。 */
+.two-panels{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+.two-panels>*{min-width:0}
+/* 左栏内容撑满整列高度，避免底部大片留白 */
+.slide-cols>.diagram>.two-panels,
+.slide-cols>.diagram>.cards,
+.slide-cols>.diagram>.business-questions,
+.slide-cols>.diagram>.case-layout{flex:1 1 auto!important}
+.slide-cols>.diagram>.two-panels>.panel,
+.slide-cols>.diagram>.cards>.card{min-height:0}
+.case-layout{grid-template-columns:minmax(0,1.1fr) minmax(0,1.3fr)!important}
+.case-layout>*{min-width:0}
+.business-questions{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+.business-questions>*{min-width:0}
+.cards>*{min-width:0}
+.card p{overflow-wrap:anywhere}
+.panel p,.panel h3,.panel-item{overflow-wrap:anywhere}
+.task-steps{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+.task-steps>*{min-width:0}
+.task-check ul,.task-check-all{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+.task-check li,.task-check-all li{min-width:0;overflow-wrap:anywhere}
+.formula>div{flex-wrap:wrap}
+.formula>div span{min-width:0;overflow-wrap:anywhere}
+
+/* ===== 离屏测量模式 =====
+   deck-scale.js 需要量出每一页画布的真实高度，但非激活页是 display:none，量不到。
+   测量时临时给 <html> 加 .deck-measuring，把所有页展开成 1280px 宽的静态块，
+   量完立刻移除。视觉上不可见（visibility:hidden + 移出视口）。
+
+   注意：'.js' 类是加在 <html> 上的，不是后代元素，
+   所以这里必须写 html.deck-measuring.js .slide，
+   写成 html.deck-measuring .js .slide 是匹配不到的。 */
+html.deck-measuring.js .slide,
+html.deck-measuring.js .slide.active{
+  display:block!important;position:absolute!important;
+  left:-20000px!important;top:0!important;
+  width:1280px!important;max-width:none!important;
+  aspect-ratio:auto!important;height:auto!important;
+  min-height:720px!important;visibility:hidden!important;pointer-events:none!important;
+  overflow:visible!important;padding:0!important;
+}
+html.deck-measuring.js .slide>.slide-canvas{
+  position:static!important;left:auto!important;top:auto!important;
+  width:1280px!important;max-width:none!important;height:auto!important;min-height:720px!important;
+  transform:none!important;visibility:visible!important;margin:0!important;
+  padding:28px 46px 52px!important;box-sizing:border-box!important;
+  display:flex!important;flex-direction:column!important;
+}
+html.deck-measuring.js .lesson,
+html.deck-measuring.js .lesson.active{display:block!important}
+html.deck-measuring.js #stage{display:block!important;height:auto!important;overflow:visible!important}
+/* 全屏规则里的固定尺寸也要让位给测量模式 */
+html.js:fullscreen.deck-measuring .lesson.active .slide{
+  width:1280px!important;height:auto!important;max-width:none!important;aspect-ratio:auto!important;
+}
+
+/* Portal-compatible preview; original PDF is the visual source. */
+.slide-content .slide-canvas,.slide-text .slide-canvas{position:relative}
+@media(min-width:851px){
+ .js .slide>.slide-content,html.js:fullscreen .slide>.slide-content{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip-path:inset(50%)!important;white-space:nowrap!important}
+ .slide-text .slide-canvas{padding:24px;min-height:0;transform:none}
+ .js .slide>.preview-status{position:absolute!important;inset:0;display:grid;place-items:center;width:100%!important;height:100%!important;background:#eef7ff;color:#082f75}
+}
+.practice-prepare{margin:24px 0}.practice-prepare p+p{margin-top:14px}.practice-jumps{display:flex;flex-wrap:wrap;gap:12px 24px;margin:24px 0;font-size:15px}
+@media(max-width:850px){.slide-cols,.task-steps,.task-check ul,.task-check-all{grid-template-columns:minmax(0,1fr)!important}.slide-content .slide-canvas::before,.slide-content .slide-canvas::after{display:none}.slide-content .slide-cols{gap:18px}.practice-jumps{display:grid}}
+
+@media(max-width:850px){.kind-cover::after,.kind-ending::after{display:none}}

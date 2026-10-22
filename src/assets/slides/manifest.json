@@ -1,0 +1,78 @@
+{
+  "pages": 18,
+  "pdfSha256": "ad1cfafbf8e6fdd9c5767752fe1f43378f58943cacdf1f3525427b312b2f59c0",
+  "images": [
+    {
+      "file": "slide-01.webp",
+      "sha256": "229e240d1b4b82b46323f93c875329c182a4ba7813749ddf4554aa0bf16983b4"
+    },
+    {
+      "file": "slide-02.webp",
+      "sha256": "6e668ff334eaa7086daacc9e11b43202ae9ddd2034faa4c519d7687778a55550"
+    },
+    {
+      "file": "slide-03.webp",
+      "sha256": "a9d74b5bf5cb13fe4226e7c08f2e218c8042ea71846f284376bd744913a00940"
+    },
+    {
+      "file": "slide-04.webp",
+      "sha256": "08954e66b208c76b255964cf2167acd5db40624ab2301188c6300611fa9fdbf3"
+    },
+    {
+      "file": "slide-05.webp",
+      "sha256": "806a1ab84279f75be6225388d54e93fd0abee70dbe295bb760665bf84e2b86c4"
+    },
+    {
+      "file": "slide-06.webp",
+      "sha256": "42d21a9156d8b16bfc7abf63ea7d0051996ada6280710403bf596e53ec9b2b06"
+    },
+    {
+      "file": "slide-07.webp",
+      "sha256": "c27f6063e1059a47c9eb51d084369dfc75fc5064ff83a33de5cdeb89e88dd7ab"
+    },
+    {
+      "file": "slide-08.webp",
+      "sha256": "85b1eb7f7f21d12162ad1c8a9db6ddf15a9342ebf34c311fe0932500816ca4bb"
+    },
+    {
+      "file": "slide-09.webp",
+      "sha256": "b72259a8db072a12da6355a84b42102f17b95354aa70096296209d2a20a89ddb"
+    },
+    {
+      "file": "slide-10.webp",
+      "sha256": "e8900706a7493525b710cc444ba58dc70e15180f8a1f56c580bd06977fcc8ddc"
+    },
+    {
+      "file": "slide-11.webp",
+      "sha256": "022c30228ffd0278d4f3c086baa8fc2af4e88b78f19c3606589efb5347ff59d0"
+    },
+    {
+      "file": "slide-12.webp",
+      "sha256": "8fdfe6357893dca260041238db538a47c41541310ec4ba95d8f39da2c5f4aa7a"
+    },
+    {
+      "file": "slide-13.webp",
+      "sha256": "37265fc3f4b85cf779b9542d98f1d7846548ab7c694882ebdb8959681c095cbc"
+    },
+    {
+      "file": "slide-14.webp",
+      "sha256": "447cb62df9ef95912d76c54692fa9ba530a9edbb66e0fc25dac37a0ea9cee68f"
+    },
+    {
+      "file": "slide-15.webp",
+      "sha256": "1bb7c220c373df07a5d906a7c42f247c62c7687793ef351604a493da27654569"
+    },
+    {
+      "file": "slide-16.webp",
+      "sha256": "7469ef31ddbbe50069937deffde8e45de939949b528dddc3ecb362fde500edf6"
+    },
+    {
+      "file": "slide-17.webp",
+      "sha256": "f884753366da77ff56d3af475dcd0830375b8a073553fbd4546abeea8d44739d"
+    },
+    {
+      "file": "slide-18.webp",
+      "sha256": "cbff6b6287027bc5051496536005d8119df37e290729b383dddd868f3d7e86ec"
+    }
+  ]
+}
